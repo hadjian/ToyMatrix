@@ -11,17 +11,19 @@
 #ifndef TOYMATRIX_H
 #define TOYMATRIX_H
 
+#include <Include/arithmeticex.h>
+
 #include <cassert>
 #include <cstdio> 
 using namespace std;
+
 
 template<class U> class ToyVector;
 
 template<class T>
 class ToyMatrix {
-  friend class ToyVector<float>;
-  friend class ToyVector<int>;
-public:
+  friend class ToyVector<T>;
+ public:
   ToyMatrix(int rows = 4, int columns = 4, T* entries = 0x0);
   ToyMatrix(const ToyMatrix& other);
   ~ToyMatrix();
@@ -29,13 +31,14 @@ public:
   ToyMatrix&   operator=(const ToyMatrix& rhs);
   T&           operator()(const int& row, const int& column) const; //TODO: check assembler output for inlined code
 
-  ToyMatrix    operator*(const ToyMatrix& rhs);
-  ToyVector<T> operator*(const ToyVector<T>& rhs);
-  ToyMatrix    operator+(const ToyMatrix& rhs);
-  ToyMatrix    operator-(const ToyMatrix& rhs);
+  ToyMatrix    operator*(const ToyMatrix& rhs)    throw(ValueRangeExceeded<T>);
+  ToyVector<T> operator*(const ToyVector<T>& rhs) throw(ValueRangeExceeded<T>);
+  ToyMatrix    operator+(const ToyMatrix& rhs)    throw(ValueRangeExceeded<T>);
+  ToyMatrix    operator-(const ToyMatrix& rhs)    throw(ValueRangeExceeded<T>);
 
-  ToyMatrix&   operator+=(const ToyMatrix& rhs);
-  ToyMatrix&   operator-=(const ToyMatrix& rhs);
+  ToyMatrix&   operator+=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
+  ToyMatrix&   operator-=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
+  ToyMatrix&   operator*=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
 
   bool isTransposed();
   bool transpose();
@@ -43,7 +46,7 @@ public:
   int getColumns();
   void printValues();
 
-protected:
+ protected:
   int Rows, Columns;
   int Transposed;
   T* Entries;
@@ -60,7 +63,7 @@ ToyMatrix<T>::ToyMatrix(int rows /*= 4*/, int columns /*= 4*/, T* entries /*= 0x
   if (!Entries) {
     Entries = new T[Rows*Columns];
     for (int i=0; i<(Rows*Columns); i++) {
-      Entries[i] = T(); // value-initialized (zero for most primitives)
+      Entries[i] = T();
     }
   } else {
     Entries = entries;
@@ -114,14 +117,15 @@ inline T& ToyMatrix<T>::operator()(const int& row, const int& column) const
 }
 
 template<class T>
-inline ToyMatrix<T> ToyMatrix<T>::operator*(const ToyMatrix& rhs)
+inline ToyMatrix<T> ToyMatrix<T>::operator*(const ToyMatrix& rhs) throw (ValueRangeExceeded<T>)
 {
-  assert(Columns==rhs.Rows);
   ToyMatrix result(Rows, rhs.Columns);
   for(int row=0; row < Rows; row++) {
     for(int column=0; column < rhs.Columns; column++) {
-      //scalar multiply
       for (int component=0; component < Columns; component++) {
+#ifdef ARITHMETIC_EXCEPTIONS
+        multRangeCheck((*this)(row, component), rhs(component, column));
+#endif        
 	result(row, column) += (*this)(row, component) * rhs(component, column);
       }
     }
@@ -130,7 +134,7 @@ inline ToyMatrix<T> ToyMatrix<T>::operator*(const ToyMatrix& rhs)
 }
 
 template<class T>
-ToyVector<T> ToyMatrix<T>::operator*(const ToyVector<T>& rhs)
+ToyVector<T> ToyMatrix<T>::operator*(const ToyVector<T>& rhs) throw (ValueRangeExceeded<T>)
 {
   assert(Columns==rhs.Rows);
   ToyVector<T> res(Rows);
@@ -145,7 +149,7 @@ ToyVector<T> ToyMatrix<T>::operator*(const ToyVector<T>& rhs)
 }
 
 template<class T>
-inline ToyMatrix<T> ToyMatrix<T>::operator+(const ToyMatrix& rhs)
+inline ToyMatrix<T> ToyMatrix<T>::operator+(const ToyMatrix& rhs) throw (ValueRangeExceeded<T>) 
 {
   assert(Rows==rhs.Rows && Columns==rhs.Columns);
   ToyMatrix result(Rows, Columns);
@@ -159,7 +163,7 @@ inline ToyMatrix<T> ToyMatrix<T>::operator+(const ToyMatrix& rhs)
 }
 
 template<class T>
-inline ToyMatrix<T> ToyMatrix<T>::operator-(const ToyMatrix& rhs)
+inline ToyMatrix<T> ToyMatrix<T>::operator-(const ToyMatrix& rhs) throw (ValueRangeExceeded<T>) 
 {
   assert(Rows==rhs.Rows && Columns==rhs.Columns);
   ToyMatrix result(Rows, Columns);
@@ -173,7 +177,8 @@ inline ToyMatrix<T> ToyMatrix<T>::operator-(const ToyMatrix& rhs)
 }
 
 template<class T>
-inline ToyMatrix<T>& ToyMatrix<T>::operator+=(const ToyMatrix& rhs) {
+inline ToyMatrix<T>& ToyMatrix<T>::operator+=(const ToyMatrix& rhs) throw (ValueRangeExceeded<T>) 
+{
   assert(Rows==rhs.Rows && Columns==rhs.Columns);
   for (int i=0; i < Rows; i++) {
     for (int j=0; j < Columns; j++) {
@@ -184,13 +189,39 @@ inline ToyMatrix<T>& ToyMatrix<T>::operator+=(const ToyMatrix& rhs) {
 }
 
 template<class T>
-inline ToyMatrix<T>& ToyMatrix<T>::operator-=(const ToyMatrix& rhs) {
+inline ToyMatrix<T>& ToyMatrix<T>::operator-=(const ToyMatrix& rhs) throw (ValueRangeExceeded<T>)
+{
   assert(Rows==rhs.Rows && Columns==rhs.Columns);
   for (int i=0; i < Rows; i++) {
     for (int j=0; j < Columns; j++) {
       (*this)(i,j) -= rhs(i,j);
     }
   }
+  return (*this);
+}
+
+template<class T>
+inline ToyMatrix<T>& ToyMatrix<T>::operator*=(const ToyMatrix& rhs) throw (ValueRangeExceeded<T>) 
+{
+  assert(Columns == rhs.Rows);
+  int newRows=Rows, newColumns=rhs.Columns;
+  int *resultEntriesp = new int[newRows*newColumns]();
+  for (int i=0; i<newRows; i++) {
+    for (int j=0; j<newColumns; j++) {
+      for (int component=0; component<Columns; component++) {
+        printf("accum: %i\n", resultEntriesp[i,j]);
+        resultEntriesp[i,j]+= (*this)(i, component) * rhs(component, j);
+        printf("(%i,%i)=%i*%i\n", i,j,(*this)(i,component),rhs(component,j));
+        printf("accum: %i\n", resultEntriesp[i,j]);
+      }
+      printf("%i\n", resultEntriesp[i*newRows+j]);
+    }
+  } 
+  delete[] Entries; 
+  Entries = resultEntriesp;
+  Rows = newRows;
+  Columns = newColumns;
+  Transposed = 0;
   return (*this);
 }
 
