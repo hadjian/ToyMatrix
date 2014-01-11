@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <cstdio>
 using namespace std;
 
@@ -57,7 +58,7 @@ TEST(ToyMatrixTest, Initialization) {
 } 
 
 
-// Using ASSERT in this test, because subsecuent tests
+// Using ASSERT in this test, because subsequent tests
 // make use of assignment and copy construction.
 TEST(ToyMatrixTest, CopyAndAssignment) {
   // Copy Construct a new object.
@@ -72,7 +73,7 @@ TEST(ToyMatrixTest, CopyAndAssignment) {
 
   ASSERT_EQ(4, iMatrixCopy.getRows());
   ASSERT_EQ(4, iMatrixCopy.getColumns());
-  ASSERT_EQ(0, iMatrixCopy.isTransposed());
+  ASSERT_EQ(false, iMatrixCopy.isTransposed());
 
   for(int row=0; row<iMatrixCopy.getRows(); row++) {
     for(int column=0; column<iMatrixCopy.getColumns(); column++) {
@@ -93,7 +94,7 @@ TEST(ToyMatrixTest, CopyAndAssignment) {
 
   ASSERT_EQ(4, iMatrix0.getRows());
   ASSERT_EQ(4, iMatrix0.getColumns());
-  ASSERT_EQ(0, iMatrix0.isTransposed());
+  ASSERT_EQ(false, iMatrix0.isTransposed());
 
   for(int row=0; row<iMatrixCopy.getRows(); row++) {
     for(int column=0; column<iMatrixCopy.getColumns(); column++) {
@@ -103,7 +104,7 @@ TEST(ToyMatrixTest, CopyAndAssignment) {
   }
 
   // Assignment of matrix with different dimensions. 
-  // This will delete the internal the array and reallocate it.
+  // This will delete the internal array and reallocate it.
   int iEntries2[] = {144, 425, 131, 999, 888,
 		    788, 467, 607, 444, 787,
 		    123, 567, 343, 999, 734};
@@ -114,7 +115,7 @@ TEST(ToyMatrixTest, CopyAndAssignment) {
 
   ASSERT_EQ(3, iMatrix0.getRows());
   ASSERT_EQ(5, iMatrix0.getColumns());
-  ASSERT_EQ(0, iMatrix0.isTransposed());
+  ASSERT_EQ(false, iMatrix0.isTransposed());
 
   for(int row=0; row<iMatrix0.getRows(); row++) {
     for(int column=0; column<iMatrix0.getColumns(); column++) {
@@ -182,4 +183,55 @@ TEST(ToyMatrixTest, AddAndSubtract) {
   }
 }
 
+TEST(ToyMatrixTest, MultiplyAndTranspose) {
+  // Test multiplication.
+  int iEntries0[] = {8383, 9243,
+                     3435, 9583,
+                     2355, 3426};
+  int *iEntriesp0 = new int[3*2];
+  memcpy(iEntriesp0, &iEntries0, 3*2*sizeof(int));
+  ToyMatrix<int> iMatrix0(3,2, iEntriesp0);
+
+  int iEntries1[] = {7498, 9876,
+                     2031, 3483};
+  int *iEntriesp1 = new int[2*2];
+  memcpy(iEntriesp1, &iEntries1, 2*2*sizeof(int));
+  ToyMatrix<int> iMatrix1(2,2, iEntriesp1);
+
+  ToyMatrix<int> iMatrix2(iMatrix0*iMatrix1);
+  EXPECT_EQ(81628267, iMatrix2(0,0)); EXPECT_EQ(114983877, iMatrix2(0,1)); 
+  EXPECT_EQ(45218703, iMatrix2(1,0)); EXPECT_EQ(67301649,  iMatrix2(1,1));
+  EXPECT_EQ(24615996, iMatrix2(2,0)); EXPECT_EQ(35190738,  iMatrix2(2,1));
+
+  // Now transpose.
+  iMatrix2.transpose();
+  EXPECT_EQ(2, iMatrix2.getRows());
+  EXPECT_EQ(3, iMatrix2.getColumns());
+  EXPECT_EQ(true, iMatrix2.isTransposed()); 
+
+  EXPECT_EQ(81628267, iMatrix2(0,0));  EXPECT_EQ(45218703, iMatrix2(0,1)); EXPECT_EQ(24615996, iMatrix2(0,2));
+  EXPECT_EQ(114983877, iMatrix2(1,0)); EXPECT_EQ(67301649, iMatrix2(1,1)); EXPECT_EQ(35190738,  iMatrix2(1,2));
+
+  // Multiply transposed with untransposed.
+  int iEntries2[] = { 23,  29, 
+                      35,  48, 
+                      34, 132};
+  int *iEntries2p = new int[3*2];
+  memcpy(iEntries2p, &iEntries2, 3*2*sizeof(int));
+  ToyMatrix<int> iMatrix3(3, 2, iEntries2p);
+
+  int iEntries3[] = {  156, 3498, 
+                      3489, 3408,
+                      2844, 9422};
+  int *iEntries3p = new int[3*2];
+  memcpy(iEntries3p, &iEntries3, 3*2*sizeof(int));
+  ToyMatrix<int> iMatrix4(3, 2, iEntries3p);
+  iMatrix4.transpose();
+
+  iMatrix4 *= iMatrix3;
+  EXPECT_EQ(false, iMatrix4.isTransposed()); 
+
+  EXPECT_EQ(222399, iMatrix4(0,0)); EXPECT_EQ(547404, iMatrix4(0,1)); 
+  EXPECT_EQ(520082, iMatrix4(1,0)); EXPECT_EQ(1508730, iMatrix4(1,1));
+}
 

@@ -112,8 +112,8 @@ inline T& ToyMatrix<T>::operator()(const int& row, const int& column) const
   // and non-transposed matrices into one calculation and multiply
   // by the Transpose flag, effectively clearing the unneeded part
   // by multiplication with zero.
-  int NotTransposed = (Transposed+1)%2;
-  return Entries[NotTransposed * (row*Columns+column) + Transposed * (column*Rows+row)];
+  int notTransposed = (Transposed+1)%2;
+  return Entries[notTransposed * (row*Columns+column) + Transposed * (column*Rows+row)];
 }
 
 template<class T>
@@ -209,12 +209,11 @@ inline ToyMatrix<T>& ToyMatrix<T>::operator*=(const ToyMatrix& rhs) throw (Value
   for (int i=0; i<newRows; i++) {
     for (int j=0; j<newColumns; j++) {
       for (int component=0; component<Columns; component++) {
-        printf("accum: %i\n", resultEntriesp[i,j]);
-        resultEntriesp[i,j]+= (*this)(i, component) * rhs(component, j);
-        printf("(%i,%i)=%i*%i\n", i,j,(*this)(i,component),rhs(component,j));
-        printf("accum: %i\n", resultEntriesp[i,j]);
+#ifdef ARITHMETIC_EXCEPTIONS
+        multRangeCheck((*this)(i,component), rhs(component,j));
+#endif
+        resultEntriesp[i*newColumns+j]+= (*this)(i, component) * rhs(component, j);
       }
-      printf("%i\n", resultEntriesp[i*newRows+j]);
     }
   } 
   delete[] Entries; 
