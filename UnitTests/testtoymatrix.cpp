@@ -1,4 +1,5 @@
 #include "../Src/toymatrix.h"
+#include "../Include/arithmeticex.h"
 
 #include <gtest/gtest.h>
 
@@ -184,6 +185,7 @@ TEST(ToyMatrixTest, AddAndSubtract) {
 }
 
 TEST(ToyMatrixTest, MultiplyAndTranspose) {
+  // First test with datatype int.
   // Test multiplication.
   int iEntries0[] = {8383, 9243,
                      3435, 9583,
@@ -233,5 +235,55 @@ TEST(ToyMatrixTest, MultiplyAndTranspose) {
 
   EXPECT_EQ(222399, iMatrix4(0,0)); EXPECT_EQ(547404, iMatrix4(0,1)); 
   EXPECT_EQ(520082, iMatrix4(1,0)); EXPECT_EQ(1508730, iMatrix4(1,1));
+
+  // And now test with floats.
+  float fEntries0[] = {8383.0, 9243.0,
+                     3435.0, 9583.0,
+                     2355.0, 3426.0};
+  float *fEntriesp0 = new float[3*2];
+  memcpy(fEntriesp0, &fEntries0, 3*2*sizeof(float));
+  ToyMatrix<float> fMatrix0(3,2, fEntriesp0);
+
+  float fEntries1[] = {7498.0, 9876.0,
+                     2031.0, 3483.0};
+  float *fEntriesp1 = new float[2*2];
+  memcpy(fEntriesp1, &fEntries1, 2*2*sizeof(float));
+  ToyMatrix<float> fMatrix1(2,2, fEntriesp1);
+
+  ToyMatrix<float> fMatrix2(fMatrix0*fMatrix1);
+  EXPECT_FLOAT_EQ(81628267.0, fMatrix2(0,0)); EXPECT_FLOAT_EQ(114983877.0, fMatrix2(0,1)); 
+  EXPECT_FLOAT_EQ(45218703.0, fMatrix2(1,0)); EXPECT_FLOAT_EQ(67301649.0,  fMatrix2(1,1));
+  EXPECT_FLOAT_EQ(24615996.0, fMatrix2(2,0)); EXPECT_FLOAT_EQ(35190738.0,  fMatrix2(2,1));
+
+  // Now transpose.
+  fMatrix2.transpose();
+  EXPECT_FLOAT_EQ(2, fMatrix2.getRows());
+  EXPECT_FLOAT_EQ(3, fMatrix2.getColumns());
+  EXPECT_FLOAT_EQ(true, fMatrix2.isTransposed()); 
+
+  EXPECT_FLOAT_EQ(81628267.0, fMatrix2(0,0));  EXPECT_FLOAT_EQ(45218703.0, fMatrix2(0,1)); EXPECT_FLOAT_EQ(24615996.0, fMatrix2(0,2));
+  EXPECT_FLOAT_EQ(114983877.0, fMatrix2(1,0)); EXPECT_FLOAT_EQ(67301649.0, fMatrix2(1,1)); EXPECT_FLOAT_EQ(35190738.0,  fMatrix2(1,2));
+
+  // Multiply transposed with untransposed.
+  float fEntries2[] = { 23.0,  29.0, 
+                      35.0,  48.0, 
+                      34.0, 132.0};
+  float *fEntries2p = new float[3*2];
+  memcpy(fEntries2p, &fEntries2, 3*2*sizeof(float));
+  ToyMatrix<float> fMatrix3(3, 2, fEntries2p);
+
+  float fEntries3[] = {  156.0, 3498.0, 
+                      3489.0, 3408.0,
+                      2844.0, 9422.0};
+  float *fEntries3p = new float[3*2];
+  memcpy(fEntries3p, &fEntries3, 3*2*sizeof(float));
+  ToyMatrix<float> fMatrix4(3, 2, fEntries3p);
+  fMatrix4.transpose();
+
+  fMatrix4 *= fMatrix3;
+  EXPECT_FLOAT_EQ(false, fMatrix4.isTransposed()); 
+
+  EXPECT_FLOAT_EQ(222399.0, fMatrix4(0,0)); EXPECT_FLOAT_EQ(547404.0, fMatrix4(0,1)); 
+  EXPECT_FLOAT_EQ(520082.0, fMatrix4(1,0)); EXPECT_FLOAT_EQ(1508730.0, fMatrix4(1,1));
 }
 

@@ -1,7 +1,7 @@
 #ifndef TOY_ARITHMETIC_EXCEPTIONS
 #define TOY_ARITHMETIC_EXCEPTIONS
 
-class NotImplementedYet;
+#include "exception.h"
 
 //----------------------------------------------------------------------
 // Error-checking functions and exception classes for arithmetic 
@@ -20,9 +20,14 @@ class ValueRangeExceeded {
 };
 
 template<class T>
-void multRangeCheck(T op1, T op2) throw(NotImplementedYet);
+void multRangeCheck(T op1, T op2) throw (NotImplementedYet) {
+  throw NotImplementedYet();
+}
 
 template<>
-void multRangeCheck(int op1, int op2) throw(ValueRangeExceeded<int>);
+void multRangeCheck(float op1, float op2) throw (ValueRangeExceeded<float>); 
+
+template<>
+void multRangeCheck(int op1, int op2) throw (ValueRangeExceeded<int>);
 
 #endif

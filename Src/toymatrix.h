@@ -205,7 +205,7 @@ inline ToyMatrix<T>& ToyMatrix<T>::operator*=(const ToyMatrix& rhs) throw (Value
 {
   assert(Columns == rhs.Rows);
   int newRows=Rows, newColumns=rhs.Columns;
-  int *resultEntriesp = new int[newRows*newColumns]();
+  T *resultEntriesp = new T[newRows*newColumns]();
   for (int i=0; i<newRows; i++) {
     for (int j=0; j<newColumns; j++) {
       for (int component=0; component<Columns; component++) {
