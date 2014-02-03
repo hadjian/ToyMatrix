@@ -48,8 +48,8 @@ class ToyMatrix {
 
  protected:
   int Rows, Columns;
-  int Transposed;
   T* Entries;
+  int Transposed;
 };
 
 //! entries: ownership goes to the object
@@ -74,8 +74,8 @@ template<class T>
 ToyMatrix<T>::ToyMatrix(const ToyMatrix& other) :
   Rows(0),
   Columns(0),
-  Transposed(0),
-  Entries(0x0)
+  Entries(0x0),
+  Transposed(0)
 {
   (*this) = other;
 }
