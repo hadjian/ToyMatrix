@@ -1,4 +1,4 @@
-#include "../Src/toymatrix.h"
+#include "../Include/toymatrix.h"
 #include "../Include/arithmeticex.h"
 
 #include <gtest/gtest.h>

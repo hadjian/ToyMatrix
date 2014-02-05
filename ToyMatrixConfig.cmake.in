@@ -1,0 +1,6 @@
+# - Config file for the ToyMatrix package
+# It defines the following variable
+#  TOYMATRIX_INCLUDE_DIRS   - include directories for gtest. 
+
+# Compute paths
+set(TOYMATRIX_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")

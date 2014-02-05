@@ -11,7 +11,7 @@ endif(ArithmeticExceptions)
 # add the executable. The .h file are added to make
 # the target depend on the .h file and to rebuild the
 # target when the .h file changes.
-add_executable(testtoymatrix testtoymatrix.cpp ${CMAKE_SOURCE_DIR}/Src/toymatrix.h ${CMAKE_SOURCE_DIR}/Include/arithmeticex.cpp)
+add_executable(testtoymatrix testtoymatrix.cpp ${CMAKE_SOURCE_DIR}/Include/toymatrix.h ${CMAKE_SOURCE_DIR}/Include/arithmeticex.cpp)
 target_link_libraries(testtoymatrix ${GTEST_MAIN_LIBRARIES})
 set_target_properties(testtoymatrix PROPERTIES
                        COMPILE_FLAGS ${GTEST_CXX_FLAGS})
