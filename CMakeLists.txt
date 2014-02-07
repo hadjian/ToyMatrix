@@ -9,7 +9,7 @@ set(ToyMatrix_VERSION ${ToyMatrix_VERSION_MAJOR}.${ToyMatrix_VERSION_MINOR}.${To
 
 find_package(GTest 1.6.0 EXACT REQUIRED)
 
-include_directories(${PROJECT_SOURCE_DIR} ${GTEST_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/Include ${GTEST_INCLUDE_DIRS})
 
 add_subdirectory(UnitTests EXCLUDE_FROM_ALL)
 add_custom_target(UnitTests
@@ -22,6 +22,6 @@ add_custom_target(NoLibraryWarning
   As such, there is no library to build.
   Run \"make UnitTests\" to build the tests for the templates.")
 
-set(CONF_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR})
+set(CONF_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/Include)
 configure_file(ToyMatrixConfig.cmake.in ToyMatrixConfig.cmake @ONLY)
 configure_file(ToyMatrixConfigVersion.cmake.in ToyMatrixConfigVersion.cmake @ONLY)

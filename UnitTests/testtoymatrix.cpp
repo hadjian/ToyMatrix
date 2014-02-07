@@ -1,5 +1,5 @@
-#include "../Include/toymatrix.h"
-#include "../Include/arithmeticex.h"
+#include "toymatrix.h"
+#include "arithmeticex.h"
 
 #include <gtest/gtest.h>
 

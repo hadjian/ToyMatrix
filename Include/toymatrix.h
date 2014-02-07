@@ -11,10 +11,10 @@
 #ifndef TOYMATRIX_H
 #define TOYMATRIX_H
 
-#include <Include/arithmeticex.h>
+#include <arithmeticex.h>
 
 #include <cassert>
-#include <cstdio> 
+#include <iostream> 
 using namespace std;
 
 
@@ -255,14 +255,14 @@ inline int ToyMatrix<T>::getColumns()
 template<class T>
 void ToyMatrix<T>::printValues()
 {
-  printf("Pointer to Entries = %p\n", Entries);
+  cout << "Pointer to Entries =" << Entries << "\n";
   for(int i=0; i < Rows; i++) {
     for(int j=0; j < Columns; j++) {
-      printf("(%i,%i)=%f ", i, j, (*this)(i,j));
+      cout << "("<< i <<","<< j << ")=" << (*this)(i,j) << ")\n";
     }
-    printf("\n");
+    cout << "\n";
   }
-  printf("\n");
+  cout << "\n";
 }
 
 

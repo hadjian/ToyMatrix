@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cmath>
 #include <cassert>
+#include <iostream>
 
 /*
 // This is a generic vector that can have an arbitrary
@@ -226,13 +227,13 @@ ToyVector<T>& ToyVector<T>::normalize()
   {
     sqrsum += Entries[i]*Entries[i];
   }
-  printf("sqrsum:%i\n", sqrsum);
+  cout << "sqrsum:" << sqrsum << "\n";
   float length = sqrt((float)sqrsum);
   for (int i=0; i<NumEntries; i++)
   {
-    printf("e:%f\n", Entries[i]);
+    cout << "e:" << Entries[i] << "\n";
     Entries[i] /= length;
-    printf("e:%f, length:%f\n", Entries[i], length);
+    cout << "e:"<< Entries[i] << "length:"<< length << "\n";
   }
   return (*this);
 }
@@ -247,14 +248,12 @@ ToyVector<T> ToyVector<T>::normalized()
 template<class T>
 void ToyVector<T>::printValues()
 {
-    printf("Pointer to Entries = %p\n", Entries);
+    cout << "Pointer to Entries =" << Entries << "\n";
     for(int i=0; i < NumEntries; i++) {
-//      for(int j=0; j < Columns; j++) {
-        printf("(%i)=%f ", i, (*this)(i));
-  //    }
-      printf(",");
+      cout << "("<< i << ")="<< (*this)(i);
+      cout << ",";
     }
-    printf("\n");
+    cout << "\n";
 }
 
 
