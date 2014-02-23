@@ -9,8 +9,8 @@ using namespace std;
 
 TEST(ToyMatrixTest, DefaultContructed) {
   ToyMatrix<int> iMatrix;
-  EXPECT_EQ(4, iMatrix.getRows());
-  EXPECT_EQ(4, iMatrix.getColumns()); 
+  EXPECT_EQ(4, iMatrix.getNumRows());
+  EXPECT_EQ(4, iMatrix.getNumColumns()); 
   EXPECT_EQ(false, iMatrix.isTransposed());
 
   EXPECT_EQ(0, iMatrix(0,0)); EXPECT_EQ(0, iMatrix(0,1)); EXPECT_EQ(0, iMatrix(0,2)); EXPECT_EQ(0, iMatrix(0,3));
@@ -19,8 +19,8 @@ TEST(ToyMatrixTest, DefaultContructed) {
   EXPECT_EQ(0, iMatrix(3,0)); EXPECT_EQ(0, iMatrix(3,1)); EXPECT_EQ(0, iMatrix(3,2)); EXPECT_EQ(0, iMatrix(3,3));
 
   ToyMatrix<float> fMatrix;
-  EXPECT_EQ(4, fMatrix.getRows());
-  EXPECT_EQ(4, fMatrix.getColumns()); 
+  EXPECT_EQ(4, fMatrix.getNumRows());
+  EXPECT_EQ(4, fMatrix.getNumColumns()); 
   EXPECT_EQ(false, iMatrix.isTransposed());
 
   EXPECT_EQ(0, fMatrix(0,0)); EXPECT_EQ(0, fMatrix(0,1)); EXPECT_EQ(0, fMatrix(0,2)); EXPECT_EQ(0, fMatrix(0,3));
@@ -72,12 +72,12 @@ TEST(ToyMatrixTest, CopyAndAssignment) {
   ToyMatrix<int> iMatrix0(4, 4, iEntriesp0);
   ToyMatrix<int> iMatrixCopy(iMatrix0);
 
-  ASSERT_EQ(4, iMatrixCopy.getRows());
-  ASSERT_EQ(4, iMatrixCopy.getColumns());
+  ASSERT_EQ(4, iMatrixCopy.getNumRows());
+  ASSERT_EQ(4, iMatrixCopy.getNumColumns());
   ASSERT_EQ(false, iMatrixCopy.isTransposed());
 
-  for(int row=0; row<iMatrixCopy.getRows(); row++) {
-    for(int column=0; column<iMatrixCopy.getColumns(); column++) {
+  for(int row=0; row<iMatrixCopy.getNumRows(); row++) {
+    for(int column=0; column<iMatrixCopy.getNumColumns(); column++) {
       ASSERT_EQ(iMatrix0(row, column), iMatrixCopy(row, column)) << "Copy Construction failed: entries in row:"
                                                                     << row<<"and column:"<< column<<" differ";
     }
@@ -93,12 +93,12 @@ TEST(ToyMatrixTest, CopyAndAssignment) {
   ToyMatrix<int> iMatrix1(4, 4, iEntriesp1);
   iMatrix0 = iMatrix1;
 
-  ASSERT_EQ(4, iMatrix0.getRows());
-  ASSERT_EQ(4, iMatrix0.getColumns());
+  ASSERT_EQ(4, iMatrix0.getNumRows());
+  ASSERT_EQ(4, iMatrix0.getNumColumns());
   ASSERT_EQ(false, iMatrix0.isTransposed());
 
-  for(int row=0; row<iMatrixCopy.getRows(); row++) {
-    for(int column=0; column<iMatrixCopy.getColumns(); column++) {
+  for(int row=0; row<iMatrixCopy.getNumRows(); row++) {
+    for(int column=0; column<iMatrixCopy.getNumColumns(); column++) {
       ASSERT_EQ(iMatrix1(row, column), iMatrix0(row, column)) << "Assignment of same dimensions failed: entries in row:"
                                                                     << row<<"and column:"<< column<<" differ";
     }
@@ -114,12 +114,12 @@ TEST(ToyMatrixTest, CopyAndAssignment) {
   ToyMatrix<int> iMatrix2(3, 5, iEntriesp2);
   iMatrix0 = iMatrix2;
 
-  ASSERT_EQ(3, iMatrix0.getRows());
-  ASSERT_EQ(5, iMatrix0.getColumns());
+  ASSERT_EQ(3, iMatrix0.getNumRows());
+  ASSERT_EQ(5, iMatrix0.getNumColumns());
   ASSERT_EQ(false, iMatrix0.isTransposed());
 
-  for(int row=0; row<iMatrix0.getRows(); row++) {
-    for(int column=0; column<iMatrix0.getColumns(); column++) {
+  for(int row=0; row<iMatrix0.getNumRows(); row++) {
+    for(int column=0; column<iMatrix0.getNumColumns(); column++) {
       ASSERT_EQ(iMatrix2(row, column), iMatrix0(row, column)) << "Assignment of different dimensions failed: entries in row:"
                                                                     << row<<"and column:"<< column<<" differ";
     }
@@ -139,9 +139,9 @@ TEST(ToyMatrixTest, AddAndSubtract) {
   // Testing addition.
   ToyMatrix<int> resultIMatrix(iMatrix0+iMatrix1);
 
-  int rowWidth=resultIMatrix.getColumns();
-  for(int row=0; row<resultIMatrix.getRows(); row++) {
-    for(int column=0; column<resultIMatrix.getColumns(); column++) {
+  int rowWidth=resultIMatrix.getNumColumns();
+  for(int row=0; row<resultIMatrix.getNumRows(); row++) {
+    for(int column=0; column<resultIMatrix.getNumColumns(); column++) {
       int expectedResult = 2*iEntries0[row*rowWidth+column];
       EXPECT_EQ(expectedResult, resultIMatrix(row, column)) << "Addition operator produced an error for row:"
                                                             << row<< " and column:"<< column;
@@ -151,9 +151,9 @@ TEST(ToyMatrixTest, AddAndSubtract) {
   // Testing subtraction.
   resultIMatrix = iMatrix0 - iMatrix1;
  
-  rowWidth=resultIMatrix.getColumns();
-  for(int row=0; row<resultIMatrix.getRows(); row++) {
-    for(int column=0; column<resultIMatrix.getColumns(); column++) {
+  rowWidth=resultIMatrix.getNumColumns();
+  for(int row=0; row<resultIMatrix.getNumRows(); row++) {
+    for(int column=0; column<resultIMatrix.getNumColumns(); column++) {
       EXPECT_EQ(0, resultIMatrix(row, column)) << "Subtraction operator produced and error for row:"
                                                << row<< "and column:"<< column;
     }
@@ -162,9 +162,9 @@ TEST(ToyMatrixTest, AddAndSubtract) {
   // Testing addition and assignment operator.
   iMatrix0 += iMatrix1;
 
-  rowWidth=iMatrix0.getColumns();
-  for(int row=0; row<iMatrix0.getRows(); row++) {
-    for(int column=0; column<iMatrix0.getColumns(); column++) {
+  rowWidth=iMatrix0.getNumColumns();
+  for(int row=0; row<iMatrix0.getNumRows(); row++) {
+    for(int column=0; column<iMatrix0.getNumColumns(); column++) {
       int expectedResult = 2*iEntries0[row*rowWidth+column];
       EXPECT_EQ(expectedResult, iMatrix0(row, column)) << "Addition and Assignment operator produced and error for row:"
                                                        << row<< "and column:"<< column;
@@ -174,9 +174,9 @@ TEST(ToyMatrixTest, AddAndSubtract) {
   // Testing subtraction and assignment operator.
   iMatrix0 -= iMatrix1;
 
-  rowWidth=iMatrix0.getColumns();
-  for(int row=0; row<iMatrix0.getRows(); row++) {
-    for(int column=0; column<iMatrix0.getColumns(); column++) {
+  rowWidth=iMatrix0.getNumColumns();
+  for(int row=0; row<iMatrix0.getNumRows(); row++) {
+    for(int column=0; column<iMatrix0.getNumColumns(); column++) {
       int expectedResult = iEntries0[row*rowWidth+column];
       EXPECT_EQ(expectedResult, iMatrix0(row, column)) << "Addition and Assignment operator produced and error for row:"
                                                        << row<< "and column:"<< column;
@@ -207,8 +207,8 @@ TEST(ToyMatrixTest, MultiplyAndTranspose) {
 
   // Now transpose.
   iMatrix2.transpose();
-  EXPECT_EQ(2, iMatrix2.getRows());
-  EXPECT_EQ(3, iMatrix2.getColumns());
+  EXPECT_EQ(2, iMatrix2.getNumRows());
+  EXPECT_EQ(3, iMatrix2.getNumColumns());
   EXPECT_EQ(true, iMatrix2.isTransposed()); 
 
   EXPECT_EQ(81628267, iMatrix2(0,0));  EXPECT_EQ(45218703, iMatrix2(0,1)); EXPECT_EQ(24615996, iMatrix2(0,2));
@@ -257,8 +257,8 @@ TEST(ToyMatrixTest, MultiplyAndTranspose) {
 
   // Now transpose.
   fMatrix2.transpose();
-  EXPECT_FLOAT_EQ(2, fMatrix2.getRows());
-  EXPECT_FLOAT_EQ(3, fMatrix2.getColumns());
+  EXPECT_FLOAT_EQ(2, fMatrix2.getNumRows());
+  EXPECT_FLOAT_EQ(3, fMatrix2.getNumColumns());
   EXPECT_FLOAT_EQ(true, fMatrix2.isTransposed()); 
 
   EXPECT_FLOAT_EQ(81628267.0, fMatrix2(0,0));  EXPECT_FLOAT_EQ(45218703.0, fMatrix2(0,1)); EXPECT_FLOAT_EQ(24615996.0, fMatrix2(0,2));

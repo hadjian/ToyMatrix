@@ -12,13 +12,13 @@
 #define TOYMATRIX_H
 
 #include <arithmeticex.h>
+#include <toyvector.h>
 
 #include <cassert>
 #include <iostream> 
 using namespace std;
 
-
-template<class U> class ToyVector;
+template<class T> class ToyVector;
 
 template<class T>
 class ToyMatrix {
@@ -31,10 +31,10 @@ class ToyMatrix {
   ToyMatrix&   operator=(const ToyMatrix& rhs);
   T&           operator()(const int& row, const int& column) const; //TODO: check assembler output for inlined code
 
-  ToyMatrix    operator*(const ToyMatrix& rhs)    throw(ValueRangeExceeded<T>);
+  ToyMatrix    operator*(const ToyMatrix&    rhs) throw(ValueRangeExceeded<T>);
   ToyVector<T> operator*(const ToyVector<T>& rhs) throw(ValueRangeExceeded<T>);
-  ToyMatrix    operator+(const ToyMatrix& rhs)    throw(ValueRangeExceeded<T>);
-  ToyMatrix    operator-(const ToyMatrix& rhs)    throw(ValueRangeExceeded<T>);
+  ToyMatrix    operator+(const ToyMatrix&    rhs) throw(ValueRangeExceeded<T>);
+  ToyMatrix    operator-(const ToyMatrix&    rhs) throw(ValueRangeExceeded<T>);
 
   ToyMatrix&   operator+=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
   ToyMatrix&   operator-=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
@@ -42,15 +42,16 @@ class ToyMatrix {
 
   bool isTransposed();
   bool transpose();
-  int getRows();
-  int getColumns();
-  void printValues();
+  int getNumRows();
+  int getNumColumns();
+  void printValues() const;
 
  protected:
   int Rows, Columns;
   T* Entries;
   int Transposed;
 };
+
 
 //! entries: ownership goes to the object
 template<class T>
@@ -134,7 +135,7 @@ inline ToyMatrix<T> ToyMatrix<T>::operator*(const ToyMatrix& rhs) throw (ValueRa
 }
 
 template<class T>
-ToyVector<T> ToyMatrix<T>::operator*(const ToyVector<T>& rhs) throw (ValueRangeExceeded<T>)
+inline ToyVector<T> ToyMatrix<T>::operator*(const ToyVector<T>& rhs) throw (ValueRangeExceeded<T>)
 {
   assert(Columns==rhs.Rows);
   ToyVector<T> res(Rows);
@@ -241,24 +242,24 @@ inline bool ToyMatrix<T>::transpose()
 }
 
 template<class T>
-inline int ToyMatrix<T>::getRows()
+inline int ToyMatrix<T>::getNumRows()
 {
   return Rows;
 }
 
 template<class T>
-inline int ToyMatrix<T>::getColumns()
+inline int ToyMatrix<T>::getNumColumns()
 {
   return Columns;
 }
 
 template<class T>
-void ToyMatrix<T>::printValues()
+void ToyMatrix<T>::printValues() const
 {
   cout << "Pointer to Entries =" << Entries << "\n";
   for(int i=0; i < Rows; i++) {
     for(int j=0; j < Columns; j++) {
-      cout << "("<< i <<","<< j << ")=" << (*this)(i,j) << ")\n";
+      cout << "("<< i <<","<< j << ")=" << (*this)(i,j) << ", ";
     }
     cout << "\n";
   }

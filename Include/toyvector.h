@@ -1,13 +1,16 @@
 #ifndef TOYVECTOR_H
 #define TOYVECTOR_H
 
-#include "toymatrix.h"
+#include <arithmeticex.h>
+#include <toymatrix.h>
 
 #include <cstring>
 #include <cmath>
 #include <cassert>
 #include <iostream>
+using namespace std;
 
+template<class T> class ToyMatrix;
 /*
 // This is a generic vector that can have an arbitrary
 // number of elements. Having a class that only allows
@@ -25,50 +28,56 @@ template<class T>
 class ToyVector {
   friend class ToyMatrix<float>;
   friend class ToyMatrix<int>;
-public:
-  // This enum is used for specifying whether
-  // this is  a ROW or COLUMN vector
-  enum TransposeType {COLUMN=0, ROW, MAX_ENUM};
 
-  ToyVector(int rows = 4);
-  ~ToyVector();
+public:
+  ToyVector(int rows = 4, T *entries = 0x0);
   ToyVector(const ToyVector& other);
+  ~ToyVector();
 
   ToyVector& operator=(const ToyVector& rhs);
-  T&         operator()(int index);
-  T          operator*(const ToyVector& rhs);
-  ToyVector  operator*(const ToyMatrix<T>& rhs);
   ToyVector  operator+(const ToyVector& rhs);
-  ToyVector& operator+=(const ToyVector& rhs);
   ToyVector  operator-(const ToyVector& rhs);
+  T          operator*(const ToyVector<T>& rhs);
+  ToyVector  operator*(const ToyMatrix<T>& rhs);
+  ToyVector& operator+=(const ToyVector& rhs);
   ToyVector& operator-=(const ToyVector& rhs);
+  T&         operator()(int index) const;
 
-  int        getNumEntries();
-  ToyVector  crossProduct(const ToyVector& rhs);
+  int        getNumRows();
+  int        getNumColumns(); 
+  ToyVector  crossProduct(const ToyVector &rhs);
   T          dotProduct(const ToyVector<T> &rhs);
-  TransposeType transpose();
+  bool       isTransposed();
+  bool       transpose();
   ToyVector& normalize();
   ToyVector  normalized();
 
-  void       printValues();
+  void       printValues() const;
 protected:
   int  Rows;
   int  Columns;
-  TransposeType Transposed;
+  int  Transposed;
   int  NumEntries;
   T*   Entries;
 };
 
+#include <toymatrix.h>
+
 template<class T>
-ToyVector<T>::ToyVector(int rows /*=4*/) :
+ToyVector<T>::ToyVector(int rows /*=4*/, T *entries /*= 0x0*/) :
   Rows(rows),
   Columns(1),
-  Transposed(COLUMN),
+  Transposed(0),
   NumEntries(rows)
 {
-  Entries = new T[rows];
-  for (int i=0; i<rows; i++) {
-    Entries[i] = T();
+  if (!entries) {
+    Entries = new T[rows];
+    for (int i=0; i<rows-1; i++) {
+      Entries[i] = T();
+    }
+    Entries[rows-1]=1;
+  } else {
+    Entries = entries;
   }
 }
 
@@ -82,7 +91,7 @@ template<class T>
 ToyVector<T>::ToyVector(const ToyVector& other) :
   Rows(0),
   Columns(0),
-  Transposed(COLUMN),
+  Transposed(0),
   NumEntries(0),
   Entries(0x0)
 {
@@ -106,17 +115,21 @@ ToyVector<T>& ToyVector<T>::operator=(const ToyVector& rhs)
 }
 
 template<class T>
-T& ToyVector<T>::operator()(int index) {
+T& ToyVector<T>::operator()(int index) const
+{
   assert(index < NumEntries);
   return Entries[index];
 }
 
 template<class T>
-T  ToyVector<T>::operator*(const ToyVector& rhs)
+T  ToyVector<T>::operator*(const ToyVector<T>& rhs)
 {
   assert(Columns==rhs.Rows);
   T res = T();
-  for (int i=0; i<NumEntries; i++) {
+  for (int i=0; i<3; i++) {
+#ifdef ARITHMETIC_EXCEPTIONS
+        multRangeCheck((*this)(i), rhs(i));
+#endif
     res += Entries[i]*rhs.Entries[i];
   }
   return res;
@@ -125,8 +138,10 @@ T  ToyVector<T>::operator*(const ToyVector& rhs)
 template<class T>
 ToyVector<T> ToyVector<T>::operator*(const ToyMatrix<T>& rhs)
 {
-  assert(Columns== rhs.Rows);
-  ToyVector<T> res(*this);
+  assert(Columns == rhs.Rows);
+  ToyVector<T> res(Columns);
+  res.transpose();
+  res(Columns-1)=0;
   for (int i=0; i<rhs.Columns; i++)
   {
     for (int j=0; j<Columns; j++)
@@ -141,7 +156,7 @@ template<class T>
 ToyVector<T>  ToyVector<T>::operator+(const ToyVector& rhs)
 {
   assert(Rows==rhs.Rows && Columns==rhs.Columns);
-  ToyVector<T> res(NumEntries);
+  ToyVector<T> res(*this);
   return (res += rhs);
 }
 
@@ -160,7 +175,7 @@ template<class T>
 ToyVector<T>  ToyVector<T>::operator-(const ToyVector& rhs)
 {
   assert(Rows==rhs.Rows && Columns==rhs.Columns);
-  ToyVector<T> res(NumEntries);
+  ToyVector<T> res(*this);
   return (res -= rhs);
 }
 
@@ -176,26 +191,32 @@ ToyVector<T>&  ToyVector<T>::operator-=(const ToyVector& rhs)
 }
 
 template<class T>
-int ToyVector<T>::getNumEntries()
+int ToyVector<T>::getNumRows()
 {
-  return NumEntries;
+  return Rows;
 }
 
-//TODO: Don't know if a cross product is extendable to more
-//      dimensions as easy as I guessed it here.
+template<class T>
+int ToyVector<T>::getNumColumns()
+{
+  return Columns;
+}
+
+//----------------------------------------------------------------------------- 
+// A cross product on n-dimensional vectors is only defined for n-1 vectors. 
+// Since this function deals with two operands, we can only do the cross
+// product on three entries.
+//----------------------------------------------------------------------------- 
 template<class T>
 ToyVector<T>  ToyVector<T>::crossProduct(const ToyVector& rhs)
 {
-  // WARNING: If you want to use this function, first check
-  //          how a cross prod works on more than three
-  //          dimensions and also on homogeneous coordinates.
   assert(0);
   assert(Rows=rhs.Rows && Columns==rhs.Columns);
   ToyVector<T> res(NumEntries);
-  for (int i=0; i<NumEntries; i++)
+  for (int i=0; i<3; i++)
   {
-    int upperIndex=(i+1)%NumEntries;
-    int lowerIndex=(i+2)%NumEntries;
+    int upperIndex=(i+1)%3;
+    int lowerIndex=(i+2)%3;
     res(i) = Entries[upperIndex] * rhs.Entries[lowerIndex] - Entries[lowerIndex] * rhs.Entries[upperIndex];
   }
   return res;
@@ -204,18 +225,27 @@ ToyVector<T>  ToyVector<T>::crossProduct(const ToyVector& rhs)
 template<class T>
 T ToyVector<T>::dotProduct(const ToyVector<T>& rhs)
 {
-  assert(Rows==rhs.Rows);
-  ToyVector<T> res = (*this).transposed();
-  return res*rhs;
+  assert(Rows==rhs.Rows && Columns==rhs.Columns);
+  ToyVector<T> res(*this);
+  res.transpose();
+  return (T) (res*rhs);
 }
 
 template<class T>
-enum ToyVector<T>::TransposeType ToyVector<T>::transpose()
+bool ToyVector<T>::isTransposed()
 {
+  return (Transposed)?true:false;
+}
+
+
+template<class T>
+bool ToyVector<T>::transpose()
+{
+  Transposed=(Transposed+1)%2;
   int temp = Rows;
   Rows = Columns;
   Columns = temp;
-  return Transposed?(ToyVector<T>::COLUMN):(ToyVector<T>::ROW);
+  return Transposed?true:false;
 }
 
 // TODO: Make this more efficient
@@ -227,13 +257,10 @@ ToyVector<T>& ToyVector<T>::normalize()
   {
     sqrsum += Entries[i]*Entries[i];
   }
-  cout << "sqrsum:" << sqrsum << "\n";
   float length = sqrt((float)sqrsum);
   for (int i=0; i<NumEntries; i++)
   {
-    cout << "e:" << Entries[i] << "\n";
     Entries[i] /= length;
-    cout << "e:"<< Entries[i] << "length:"<< length << "\n";
   }
   return (*this);
 }
@@ -246,7 +273,7 @@ ToyVector<T> ToyVector<T>::normalized()
 }
 
 template<class T>
-void ToyVector<T>::printValues()
+void ToyVector<T>::printValues() const
 {
     cout << "Pointer to Entries =" << Entries << "\n";
     for(int i=0; i < NumEntries; i++) {
