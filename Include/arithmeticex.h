@@ -20,14 +20,14 @@ class ValueRangeExceeded {
 };
 
 template<class T>
-void multRangeCheck(T op1, T op2) throw (NotImplementedYet) {
+void multRangeCheck(T op1, T op2) {
   throw NotImplementedYet();
 }
 
 template<>
-void multRangeCheck(float op1, float op2) throw (ValueRangeExceeded<float>); 
+void multRangeCheck(float op1, float op2); 
 
 template<>
-void multRangeCheck(int op1, int op2) throw (ValueRangeExceeded<int>);
+void multRangeCheck(int op1, int op2);
 
 #endif

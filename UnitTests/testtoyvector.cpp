@@ -34,7 +34,6 @@ TEST(ToyVectorTest, Initialization) {
 
   EXPECT_EQ(13, iVector(0)); EXPECT_EQ(34, iVector(1)); EXPECT_EQ(54, iVector(2)); EXPECT_EQ(999, iVector(3)); EXPECT_EQ(78, iVector(4));
 
-
   float fEntries[] = {13.0, 34.0, 54.0, 999.0, 78.0};
   float *fEntriesp = new float[5];
   memcpy(fEntriesp, &fEntries, 5*sizeof(float));
@@ -102,7 +101,7 @@ TEST(ToyVectorTest, AddAndSubtract) {
   // Testing addition.
   ToyVector<int> resultIVector(iVector0+iVector1);
 
-  for(int row=0; row<resultIVector.getNumRows(); row++) {
+  for(int row=0; row<resultIVector.getNumRows()-1; row++) {
     int expectedResult = 2*iEntries0[row];
     EXPECT_EQ(expectedResult, resultIVector(row)) << "Addition operator produced an error for row: " << row;
   }
@@ -110,24 +109,24 @@ TEST(ToyVectorTest, AddAndSubtract) {
   // Testing subtraction.
   resultIVector = iVector0 - iVector1;
  
-  for(int row=0; row<resultIVector.getNumRows(); row++) {
-    EXPECT_EQ(0, resultIVector(row)) << "Subtraction operator produced and error for row: " << row;
+  for(int row=0; row<resultIVector.getNumRows()-1; row++) {
+    EXPECT_EQ(0, resultIVector(row)) << "Subtraction operator produced an error for row: " << row;
   }
 
   // Testing addition and assignment operator.
   iVector0 += iVector1;
 
-  for(int row=0; row<iVector0.getNumRows(); row++) {
+  for(int row=0; row<iVector0.getNumRows()-1; row++) {
     int expectedResult = 2*iEntries0[row];
-    EXPECT_EQ(expectedResult, iVector0(row)) << "Addition and Assignment operator produced and error for row: " << row; 
+    EXPECT_EQ(expectedResult, iVector0(row)) << "Addition and Assignment operator (add) produced and error for row: " << row; 
   }
 
   // Testing subtraction and assignment operator.
   iVector0 -= iVector1;
 
-  for(int row=0; row<iVector0.getNumRows(); row++) {
+  for(int row=0; row<iVector0.getNumRows()-1; row++) {
     int expectedResult = iEntries0[row];
-    EXPECT_EQ(expectedResult, iVector0(row)) << "Addition and Assignment operator produced and error for row: " << row;
+    EXPECT_EQ(expectedResult, iVector0(row)) << "Addition and Assignment operator (sub) produced and error for row: " << row;
   }
 }
 
@@ -158,7 +157,7 @@ TEST(ToyVectorTest, MultiplyAndTranspose) {
 
   // Dot product. Operands should have same dimensions and equal transposition.
   iVector0.transpose();
-  int dotResult = iVector0.dotProduct(iVector1); 
+  int dotResult = iVector0*iVector1; 
 
   EXPECT_EQ(dotResult, multResult);
 
@@ -167,9 +166,21 @@ TEST(ToyVectorTest, MultiplyAndTranspose) {
 
   // Check if the resulting vector from the cross product 
   // operation is perpendicular to the generating vectors.
-  EXPECT_EQ(0, iVector2.dotProduct(iVector0)); 
-  EXPECT_EQ(0, iVector2.dotProduct(iVector1)); 
+  EXPECT_EQ(0, iVector2*iVector0); 
+  EXPECT_EQ(0, iVector2*iVector1); 
+}
 
+TEST(ToyVectorTest, ScalarMultiply)
+{
+  int *entries = new int[4];
+  entries[0]=8; entries[1]=3; entries[2]=1; entries[3]=1;
+  ToyVector<int> a(4, entries);
+
+  // Do the scalar multiplication.
+  a *= 2;
+
+  // And check outcome.
+  EXPECT_EQ(16, a(0)); EXPECT_EQ(6, a(1)); EXPECT_EQ(2, a(2)); EXPECT_EQ(1, a(3));
 }
 
 TEST(MatrixVectorTest, MatrixVectorMultiplication)

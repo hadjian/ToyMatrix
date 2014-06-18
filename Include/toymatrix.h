@@ -19,11 +19,17 @@
 using namespace std;
 
 template<class T> class ToyVector;
+template<class T> class ToyMatrix;
+template<class T> ToyMatrix<T> operator*(const ToyMatrix<T>& lhs, int rhs) throw(ValueRangeExceeded<T>);
+template<class T> ToyMatrix<T> operator*(int lhs, const ToyMatrix<T>& rhs) throw(ValueRangeExceeded<T>);
 
+//-----------------------------------------------------------------------------
+// Entries are stored in row-major order.
+//-----------------------------------------------------------------------------
 template<class T>
 class ToyMatrix {
   friend class ToyVector<T>;
- public:
+public:
   ToyMatrix(int rows = 4, int columns = 4, T* entries = 0x0);
   ToyMatrix(const ToyMatrix& other);
   ~ToyMatrix();
@@ -31,22 +37,28 @@ class ToyMatrix {
   ToyMatrix&   operator=(const ToyMatrix& rhs);
   T&           operator()(const int& row, const int& column) const; //TODO: check assembler output for inlined code
 
+  friend ToyMatrix<T> operator*<>(const ToyMatrix<T>& lhs, int rhs) throw(ValueRangeExceeded<T>);
+  friend ToyMatrix<T> operator*<>(int lhs, const ToyMatrix<T>& rhs) throw(ValueRangeExceeded<T>);
+
   ToyMatrix    operator*(const ToyMatrix&    rhs) throw(ValueRangeExceeded<T>);
   ToyVector<T> operator*(const ToyVector<T>& rhs) throw(ValueRangeExceeded<T>);
   ToyMatrix    operator+(const ToyMatrix&    rhs) throw(ValueRangeExceeded<T>);
   ToyMatrix    operator-(const ToyMatrix&    rhs) throw(ValueRangeExceeded<T>);
 
+  ToyMatrix&   operator*=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
   ToyMatrix&   operator+=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
   ToyMatrix&   operator-=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
-  ToyMatrix&   operator*=(const ToyMatrix& rhs)   throw(ValueRangeExceeded<T>);
+
+  ToyMatrix<T>& transpose();
+  void          makeIdentity(); 
 
   bool isTransposed();
-  bool transpose();
-  int getNumRows();
-  int getNumColumns();
+  int  getNumRows();
+  int  getNumColumns();
+ 
   void printValues() const;
 
- protected:
+protected:
   int Rows, Columns;
   T* Entries;
   int Transposed;
@@ -117,10 +129,33 @@ inline T& ToyMatrix<T>::operator()(const int& row, const int& column) const
   return Entries[notTransposed * (row*Columns+column) + Transposed * (column*Rows+row)];
 }
 
+template<class U>  
+ToyMatrix<U> operator*(const ToyMatrix<U>& lhs, int rhs) throw(ValueRangeExceeded<U>)
+{
+  ToyMatrix<U> result(lhs);
+  for (int i=0; i< lhs.Rows*lhs.Columns; i++)
+  {
+    result.Entries[i]*=rhs; 
+  }
+  return result;
+}
+
+template<class U>  
+ToyMatrix<U> operator*(int lhs, const ToyMatrix<U>& rhs) throw(ValueRangeExceeded<U>)
+{
+  ToyMatrix<U> result(rhs);
+  for (int i=0; i< rhs.Rows*rhs.Columns; i++)
+  {
+    result.Entries[i]*=lhs; 
+  }
+  return result;
+}
+
 template<class T>
 inline ToyMatrix<T> ToyMatrix<T>::operator*(const ToyMatrix& rhs) throw (ValueRangeExceeded<T>)
 {
-  ToyMatrix result(Rows, rhs.Columns);
+  assert(Columns == rhs.Rows);
+  ToyMatrix<T> result(Rows, rhs.Columns);
   for(int row=0; row < Rows; row++) {
     for(int column=0; column < rhs.Columns; column++) {
       for (int component=0; component < Columns; component++) {
@@ -226,19 +261,32 @@ inline ToyMatrix<T>& ToyMatrix<T>::operator*=(const ToyMatrix& rhs) throw (Value
 }
 
 template<class T>
-inline bool ToyMatrix<T>::isTransposed()
-{
-  return  (Transposed?true:false);
-}
-
-template<class T>
-inline bool ToyMatrix<T>::transpose()
+ToyMatrix<T>& ToyMatrix<T>::transpose()
 {
   Transposed = (Transposed+1)%2;
   int tmp = Rows;
   Rows = Columns;
   Columns = tmp;
-  return (Transposed?true:false);
+  return (*this);
+}
+
+template<class T>
+void ToyMatrix<T>::makeIdentity()
+{
+  //TODO: Throw exception if not square
+  if (Rows != Columns) {
+    return;  
+  }
+  memset(Entries,T(),Rows*Columns*sizeof(T));
+  for (int i=0; i<Rows; i++) {
+    Entries[i*Rows+i] = 1;
+  }
+}
+
+template<class T>
+inline bool ToyMatrix<T>::isTransposed()
+{
+  return  (Transposed?true:false);
 }
 
 template<class T>

@@ -13,15 +13,21 @@ endif(ArithmeticExceptions)
 # target when the .h file changes.
 add_executable(testtoymatrix testtoymatrix.cpp ${CMAKE_SOURCE_DIR}/Include/toymatrix.h ${CMAKE_SOURCE_DIR}/Include/arithmeticex.cpp)
 target_link_libraries(testtoymatrix ${GTEST_MAIN_LIBRARIES})
-set_target_properties(testtoymatrix PROPERTIES
-                       COMPILE_FLAGS ${GTEST_CXX_FLAGS})
+if (NOT "${GTEST_CXX_FLAGS}" STREQUAL "")
+  set_target_properties(testtoymatrix PROPERTIES
+                         COMPILE_FLAGS ${GTEST_CXX_FLAGS})
+endif()
 
 add_executable(testtoyvector testtoyvector.cpp ${CMAKE_SOURCE_DIR}/Include/toyvector.h ${CMAKE_SOURCE_DIR}/Include/arithmeticex.cpp)
 target_link_libraries(testtoyvector ${GTEST_MAIN_LIBRARIES})
-set_target_properties(testtoyvector PROPERTIES
-                       COMPILE_FLAGS ${GTEST_CXX_FLAGS})
+if (NOT "${GTEST_CXX_FLAGS}" STREQUAL "")
+  set_target_properties(testtoyvector PROPERTIES
+                         COMPILE_FLAGS ${GTEST_CXX_FLAGS})
+endif()
 
 add_executable(testexceptions testexceptions.cpp ${CMAKE_SOURCE_DIR}/Include/arithmeticex.cpp)
 target_link_libraries(testexceptions ${GTEST_MAIN_LIBRARIES})
-set_target_properties(testexceptions PROPERTIES 
-                       COMPILE_FLAGS ${GTEST_CXX_FLAGS})
+if (NOT "${GTEST_CXX_FLAGS}" STREQUAL "")
+  set_target_properties(testexceptions PROPERTIES 
+                         COMPILE_FLAGS ${GTEST_CXX_FLAGS})
+endif()
